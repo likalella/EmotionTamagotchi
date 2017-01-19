@@ -1,5 +1,5 @@
 import sys
-import time
+import socket
 import RPi.GPIO as GPIO
 from picamera import PiCamera
 
@@ -26,6 +26,8 @@ try:
     while True:
         if GPIO.input(21) == 0:
             camera.capture('image.jpg')
+            data = '1'
+            conn.sendall(data)
 
 except KeyboardInterrupt:
     GPIO.cleanup()

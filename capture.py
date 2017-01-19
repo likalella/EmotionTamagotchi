@@ -1,15 +1,29 @@
 import sys
 import socket
+import json
 import RPi.GPIO as GPIO
+import requests
 from picamera import PiCamera
 
-HOST = '203.253.23.14'
-PORT = 9000
+# inis camera
 camera = PiCamera()
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(21, GPIO.IN)
+
+# init socket
+HOST = '203.253.23.14'
+PORT = 9000
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+# init api requests
+endpoint = 'https://westus.api.cognitive.microsoft.com/emotion/v1.0/recognize'
+api_key = 'api_key'
+headers = {
+    'Content-Type': 'application/octet-stream',
+    'Ocp-Apim-Subscription-Key': api_key,
+}
+
 
 try:
     server_socket.bind((HOST, PORT))
@@ -22,12 +36,38 @@ server_socket.listen(5)
 conn, addr = server_socket.accept()
 print("Connect to client")
 
+
 try:
     while True:
         if GPIO.input(21) == 0:
             camera.capture('image.jpg')
-            data = '1'
-            conn.sendall(data)
+            image_binary = open('./image.jpg', 'rb').read()
+
+            response = requests.post(url=endpoint, data=image_binary, headers=headers)
+
+            json_object = json.loads(response.text)[0]
+            emotion_list = json_object['scores']
+            max_emotion = max(json_object['scores'], key=json_object['scores'].get)
+
+            emotion_number = 0
+            if max_emotion == 'anger':
+                emotion_number = 1
+            elif max_emotion == 'contempt':
+                emotion_number = 2
+            elif max_emotion == 'disgust':
+                emotion_number = 3
+            elif max_emotion == 'fear':
+                emotion_number = 4
+            elif max_emotion == 'happiness':
+                emotion_number = 5
+            elif max_emotion == 'neutral':
+                emotion_number = 6
+            elif max_emotion == 'sadness':
+                emotion_number = 7
+            elif max_emotion == 'surprise':
+                emotion_number = 8
+            print max_emotion
+            conn.send(str(emotion_number))
 
 except KeyboardInterrupt:
     GPIO.cleanup()

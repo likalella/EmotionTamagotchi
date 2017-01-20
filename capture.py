@@ -13,7 +13,7 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(21, GPIO.IN)
 
 # init socket
-HOST = '203.253.23.52'
+HOST = 'ip_addr'
 PORT = 9000
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -56,24 +56,25 @@ try:
                 pass
 
             emotion_number = 4
-            if max_emotion == 'anger':
+            if max_emotion == 'happiness':
+                emotion_number = 0
+            elif max_emotion == 'sadness':
+                emotion_number = 1
+            elif max_emotion == 'anger':
                 emotion_number = 2
-            elif max_emotion == 'contempt':
-                emotion_number = 7
+            elif max_emotion == 'surprise':
+                emotion_number = 3
+            elif max_emotion == 'neutral':
+                emotion_number = 4
             elif max_emotion == 'disgust':
                 emotion_number = 5
             elif max_emotion == 'fear':
                 emotion_number = 6
-            elif max_emotion == 'happiness':
-                emotion_number = 0
-            elif max_emotion == 'neutral':
-                emotion_number = 4 
-            elif max_emotion == 'sadness':
-                emotion_number = 1
-            elif max_emotion == 'surprise':
-                emotion_number = 3
+            elif max_emotion == 'contempt':
+                emotion_number = 7
             print max_emotion
             conn.send(str(emotion_number))
+
 
 except KeyboardInterrupt:
     GPIO.cleanup()
